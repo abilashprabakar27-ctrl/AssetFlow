@@ -1,226 +1,253 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AssetCategory } from '@/lib/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
-
-const formSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  categoryId: z.string().min(1, 'Category is required'),
-  serialNumber: z.string().optional(),
-  acquisitionDate: z.string().min(1, 'Acquisition date is required'),
-  acquisitionCost: z.coerce.number().min(0, 'Cost must be 0 or greater'),
-  condition: z.enum(['new', 'good', 'fair', 'poor']),
-  location: z.string().optional(),
-  isBookable: z.boolean().default(false),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 export default function RegisterAssetPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [categories, setCategories] = useState<AssetCategory[]>([]);
-  const [generatedTag, setGeneratedTag] = useState<string>('Loading...');
+  
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  
+  const [nextTag, setNextTag] = useState('AF-0001');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
-    defaultValues: {
-      condition: 'good',
-      isBookable: false,
-    },
-  });
+  // Form Fields
+  const [name, setName] = useState('');
+  const [serial, setSerial] = useState('');
+  const [location, setLocation] = useState('HQ - Floor 3');
+  const [condition, setCondition] = useState('Excellent');
+  const [cost, setCost] = useState('');
+  const [isBookable, setIsBookable] = useState(false);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
 
-  const isBookableValue = watch('isBookable');
+  const fetchData = useCallback(async () => {
+    // Categories
+    const { data: cats } = await supabase.from('asset_categories').select('*').eq('status', 'active');
+    if (cats) setCategories(cats);
 
-  useEffect(() => {
-    const loadFormData = async () => {
-      try {
-        // Fetch active categories
-        const { data: catData, error: catErr } = await supabase
-          .from('asset_categories')
-          .select('*')
-          .eq('status', 'active');
-        
-        if (catErr) throw catErr;
-        setCategories(catData || []);
-
-        // Generate Tag: count existing assets
-        const { count, error: countErr } = await supabase
-          .from('assets')
-          .select('*', { count: 'exact', head: true });
-
-        if (countErr) throw countErr;
-
-        const nextNum = (count || 0) + 1;
-        const paddedNum = String(nextNum).padStart(4, '0');
-        setGeneratedTag(`AF-${paddedNum}`);
-      } catch (err: any) {
-        console.error(err);
-        setError('Failed to fetch initial categories/tag count.');
-      }
-    };
-
-    loadFormData();
+    // Assets to generate next Tag
+    const { data: assets } = await supabase.from('assets').select('tag');
+    if (assets && assets.length > 0) {
+      // Find maximum numeric tag
+      const tags = assets.map((a: any) => {
+        const num = parseInt(a.tag.split('-')[1]);
+        return isNaN(num) ? 0 : num;
+      });
+      const maxTag = Math.max(...tags, 0);
+      const nextNum = maxTag + 1;
+      // Pad to 4 digits e.g. AF-0006
+      const paddedNum = String(nextNum).padStart(4, '0');
+      setNextTag(`AF-${paddedNum}`);
+    } else {
+      setNextTag('AF-0001');
+    }
   }, [supabase]);
 
-  const onSubmit = async (values: FormValues) => {
-    setLoading(true);
-    setError('');
-    try {
-      const { error: insertErr } = await supabase.from('assets').insert({
-        tag: generatedTag,
-        name: values.name,
-        category_id: values.categoryId,
-        serial_number: values.serialNumber || null,
-        acquisition_date: values.acquisitionDate,
-        acquisition_cost: values.acquisitionCost,
-        condition: values.condition,
-        location: values.location || null,
-        is_bookable: values.isBookable,
-        status: 'available',
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleCategoryChange = (catId: string) => {
+    const cat = categories.find((c) => c.id === catId);
+    setSelectedCategory(cat || null);
+    
+    // Reset custom fields values
+    if (cat?.custom_fields) {
+      const initialFields: Record<string, string> = {};
+      Object.keys(cat.custom_fields).forEach((key) => {
+        initialFields[key] = '';
       });
-
-      if (insertErr) throw insertErr;
-
-      router.push('/assets');
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to register the asset.');
-    } finally {
-      setLoading(false);
+      setCustomFieldValues(initialFields);
+    } else {
+      setCustomFieldValues({});
     }
   };
 
-  return (
-    <div className="container mx-auto py-10 px-4 max-w-2xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Register New Asset</h1>
-          <p className="text-sm text-gray-500">Add a new physical asset to the inventory.</p>
-        </div>
-        <Link href="/assets">
-          <Button variant="ghost">Cancel</Button>
-        </Link>
-      </div>
+  const handleCustomFieldChange = (key: string, val: string) => {
+    setCustomFieldValues((prev) => ({
+      ...prev,
+      [key]: val,
+    }));
+  };
 
-      <Card>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    // Get current user session
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setError('Session expired. Please log in.');
+      setLoading(false);
+      return;
+    }
+
+    // Construct custom fields payload merged with category custom fields configuration values
+    const finalCustomFields: Record<string, any> = {};
+    if (selectedCategory?.custom_fields) {
+      Object.keys(selectedCategory.custom_fields).forEach((key) => {
+        finalCustomFields[key] = customFieldValues[key] || '';
+      });
+    }
+
+    const payload = {
+      tag: nextTag,
+      name,
+      serial: serial || null,
+      category_id: selectedCategory?.id || null,
+      department_id: null, // default unassigned
+      status: 'available' as const,
+      is_bookable: isBookable,
+      condition,
+      location,
+      cost: cost ? parseFloat(cost) : null,
+      custom_fields: finalCustomFields, // wait, supabase schema defines category custom_fields, let's keep it locally on the asset too!
+    };
+
+    // Call insert
+    const { error: insertError } = await supabase.from('assets').insert([payload]);
+
+    if (insertError) {
+      setError(insertError.message || 'Failed to register asset.');
+      setLoading(false);
+      return;
+    }
+
+    // Add activity log
+    await supabase.from('activity_logs').insert([
+      {
+        user_id: user.id,
+        action: 'Register Asset',
+        details: `Registered asset ${nextTag}: ${name} under category ${selectedCategory?.name || 'None'}`,
+      },
+    ]);
+
+    setLoading(false);
+    router.push('/assets');
+  };
+
+  return (
+    <div className="container mx-auto py-6 px-4 max-w-2xl">
+      <Card className="shadow-xs border border-gray-200">
         <CardHeader>
-          <CardTitle>Asset Details</CardTitle>
-          <CardDescription>
-            The generated asset tag is <span className="font-mono font-bold text-indigo-600">{generatedTag}</span>
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold">Register New Asset</CardTitle>
+          <CardDescription>Add a new physical asset or bookable resource to the corporate ledger.</CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-200">
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
                 {error}
               </div>
             )}
 
-            <div className="space-y-1">
-              <Label htmlFor="name">Asset Name *</Label>
-              <Input id="name" placeholder="e.g. MacBook Pro M3" {...register('name')} />
-              {errors.name && <span className="text-xs text-red-500">{errors.name.message}</span>}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="tag">Asset Tag</Label>
+                <Input id="tag" value={nextTag} disabled className="bg-gray-100 font-semibold" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="serial">Serial Number</Label>
+                <Input id="serial" placeholder="S/N or Unique ID" value={serial} onChange={(e) => setSerial(e.target.value)} />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="category">Category *</Label>
-                <Select onValueChange={(val: any) => setValue('categoryId', val || '')}>
+            <div className="space-y-1.5">
+              <Label htmlFor="name">Asset Name / Title</Label>
+              <Input id="name" placeholder="e.g. MacBook Pro 14-inch" required value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="category">Category</Label>
+                <Select onValueChange={(val) => { if (typeof val === 'string') handleCategoryChange(val); }} required>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="Select Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
+                    {categories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.categoryId && <span className="text-xs text-red-500">{errors.categoryId.message}</span>}
               </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="serialNumber">Serial Number</Label>
-                <Input id="serialNumber" placeholder="e.g. C02X12345678" {...register('serialNumber')} />
+              <div className="space-y-1.5">
+                <Label htmlFor="cost">Acquisition Cost ($)</Label>
+                <Input id="cost" type="number" step="0.01" placeholder="0.00" value={cost} onChange={(e) => setCost(e.target.value)} />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="acquisitionDate">Acquisition Date *</Label>
-                <Input id="acquisitionDate" type="date" {...register('acquisitionDate')} />
-                {errors.acquisitionDate && <span className="text-xs text-red-500">{errors.acquisitionDate.message}</span>}
+            {/* Dynamic Custom Fields Section */}
+            {selectedCategory?.custom_fields && Object.keys(selectedCategory.custom_fields).length > 0 && (
+              <div className="border border-blue-100 bg-blue-50/20 p-4 rounded-lg space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-700">Category-Specific Specifications ({selectedCategory.name})</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {Object.keys(selectedCategory.custom_fields).map((key) => (
+                    <div key={key} className="space-y-1.5">
+                      <Label htmlFor={`custom-${key}`} className="capitalize">{key.replace('_', ' ')}</Label>
+                      <Input 
+                        id={`custom-${key}`} 
+                        placeholder={`Value for ${key.replace('_', ' ')}`}
+                        value={customFieldValues[key] || ''} 
+                        onChange={(e) => handleCustomFieldChange(key, e.target.value)} 
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
 
-              <div className="space-y-1">
-                <Label htmlFor="acquisitionCost">Acquisition Cost (USD) *</Label>
-                <Input id="acquisitionCost" type="number" step="0.01" placeholder="0.00" {...register('acquisitionCost')} />
-                {errors.acquisitionCost && <span className="text-xs text-red-500">{errors.acquisitionCost.message}</span>}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="location">Initial Location</Label>
+                <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} />
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label htmlFor="condition">Condition *</Label>
-                <Select defaultValue="good" onValueChange={(val) => setValue('condition', (val || 'good') as any)}>
+              <div className="space-y-1.5">
+                <Label htmlFor="condition">Check-in Condition</Label>
+                <Select onValueChange={(val) => setCondition(val || 'Excellent')} defaultValue="Excellent">
                   <SelectTrigger id="condition">
-                    <SelectValue placeholder="Select Condition" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                    <SelectItem value="poor">Poor</SelectItem>
+                    <SelectItem value="Excellent">Excellent</SelectItem>
+                    <SelectItem value="Good">Good</SelectItem>
+                    <SelectItem value="Fair">Fair</SelectItem>
+                    <SelectItem value="Poor">Poor/Damaged</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="location">Location / Room</Label>
-                <Input id="location" placeholder="e.g. Conference Room A" {...register('location')} />
-              </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <input
-                id="isBookable"
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                checked={isBookableValue}
-                onChange={(e) => setValue('isBookable', e.target.checked)}
+            {/* Bookable Flag */}
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 border rounded-lg">
+              <input 
+                id="isBookable" 
+                type="checkbox" 
+                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                checked={isBookable}
+                onChange={(e) => setIsBookable(e.target.checked)}
               />
-              <div className="grid gap-1.5 leading-none">
-                <Label htmlFor="isBookable" className="cursor-pointer">
-                  Is Bookable / Shareable
-                </Label>
-                <p className="text-xs text-gray-500">
-                  Allow other employees to request bookings for this asset.
-                </p>
-              </div>
+              <Label htmlFor="isBookable" className="font-semibold text-gray-900 cursor-pointer">
+                Mark as Shared Bookable Resource
+                <span className="font-normal text-xs text-gray-500 block">Enables this resource to be scheduled by time slots on the Booking calendar.</span>
+              </Label>
             </div>
           </CardContent>
-
-          <CardFooter className="flex justify-end gap-2 border-t pt-6 mt-6">
-            <Link href="/assets">
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
+          
+          <CardFooter className="flex justify-between border-t p-4 mt-6">
+            <Link href="/assets" className="inline-flex h-10 items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50">
+              Cancel
             </Link>
             <Button type="submit" disabled={loading}>
               {loading ? 'Registering...' : 'Register Asset'}
@@ -229,5 +256,3 @@ export default function RegisterAssetPage() {
         </form>
       </Card>
     </div>
-  );
-}
