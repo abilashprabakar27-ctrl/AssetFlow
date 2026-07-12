@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { 
   LayoutDashboard, 
   Boxes, 
@@ -18,11 +18,7 @@ import { NotificationBell } from './activity/NotificationBell';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
