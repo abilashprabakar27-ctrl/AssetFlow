@@ -190,11 +190,22 @@ export default function OrgSetupPage() {
   };
 
   return (
-    <div className="container mx-auto space-y-8 max-w-7xl animate-in fade-in duration-300">
+    <div className="relative min-h-screen p-6 lg:p-8 space-y-8 overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-[-5%] right-[-5%] w-[400px] h-[400px] rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-violet-500/10 blur-[120px] pointer-events-none" />
+
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50">Organization Setup</h1>
-        <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">Configure your departments, custom asset category fields, and employees role promotions.</p>
+      <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-in fade-in duration-300">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-animated shadow-glow-blue flex-shrink-0">
+            <Building2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-zinc-50">Organization Setup</h1>
+            <p className="text-muted-foreground text-sm mt-1">Configure your departments, custom asset category fields, and employee promotions.</p>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="departments" className="space-y-6">
