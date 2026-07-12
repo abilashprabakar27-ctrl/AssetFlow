@@ -50,3 +50,88 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Enable btree_gist extension for overlap exclusion constraints
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+
+-- Create public.assets table if not already created (owned by Person 2 but needed by Person 3)
+CREATE TABLE IF NOT EXISTS public.assets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    tag TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    serial TEXT UNIQUE,
+    category_id UUID REFERENCES public.asset_categories(id) ON DELETE SET NULL,
+    department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL,
+    status public.asset_status NOT NULL DEFAULT 'available',
+    is_bookable BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Create public.allocations table (owned by Person 2 but referenced by Person 1 & 3 reports)
+CREATE TABLE IF NOT EXISTS public.allocations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    asset_id UUID NOT NULL REFERENCES public.assets(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    department_id UUID REFERENCES public.departments(id) ON DELETE SET NULL,
+    allocated_at TIMESTAMPTZ DEFAULT now(),
+    returned_at TIMESTAMPTZ,
+    status TEXT DEFAULT 'active'
+);
+
+-- Create public.bookings table (owned by Person 3)
+CREATE TABLE IF NOT EXISTS public.bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    resource_id UUID NOT NULL REFERENCES public.assets(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ NOT NULL,
+    status TEXT NOT NULL DEFAULT 'active',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    CONSTRAINT bookings_no_overlap EXCLUDE USING gist (
+        resource_id WITH =,
+        tstzrange(start_time, end_time, '[]') WITH &&
+    ) WHERE (status = 'active'),
+    CONSTRAINT bookings_start_before_end CHECK (start_time < end_time)
+);
+
+-- Create public.activity_logs table (owned by Person 3)
+CREATE TABLE IF NOT EXISTS public.activity_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    action TEXT NOT NULL,
+    details TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS
+ALTER TABLE public.assets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.allocations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.activity_logs ENABLE ROW LEVEL SECURITY;
+
+-- Simple Policies for demo purposes
+CREATE POLICY select_assets ON public.assets FOR SELECT TO authenticated USING (true);
+CREATE POLICY write_assets ON public.assets FOR ALL TO authenticated USING (true);
+
+CREATE POLICY select_allocations ON public.allocations FOR SELECT TO authenticated USING (true);
+CREATE POLICY write_allocations ON public.allocations FOR ALL TO authenticated USING (true);
+
+CREATE POLICY select_bookings ON public.bookings FOR SELECT TO authenticated USING (true);
+CREATE POLICY write_bookings ON public.bookings FOR ALL TO authenticated USING (true);
+
+CREATE POLICY select_activity_logs ON public.activity_logs FOR SELECT TO authenticated USING (true);
+CREATE POLICY write_activity_logs ON public.activity_logs FOR ALL TO authenticated USING (true);
+
+-- RPC for Handshake 3 (Reports Query)
+CREATE OR REPLACE FUNCTION public.get_department_allocations_summary()
+RETURNS TABLE (id UUID, name TEXT, total_allocations BIGINT) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT d.id, d.name, COUNT(a.id) AS total_allocations
+  FROM public.departments d
+  LEFT JOIN public.allocations a ON d.id = a.department_id
+  GROUP BY d.id, d.name;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
