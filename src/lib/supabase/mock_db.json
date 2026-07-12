@@ -73,6 +73,15 @@
       "role": "employee",
       "department_id": null,
       "status": "active"
+    },
+    {
+      "id": "u_0vmodvip2",
+      "name": "Arshad",
+      "email": "arshadbusiness099@gmail.com",
+      "password": "arshad123",
+      "role": "employee",
+      "department_id": null,
+      "status": "active"
     }
   ],
   "asset_categories": [
@@ -241,6 +250,13 @@
       "action": "Signup",
       "details": "User signed up: test@example.com",
       "created_at": "2026-07-12T06:46:12.539Z"
+    },
+    {
+      "id": "l_ibxr58r8m",
+      "user_id": "u_0vmodvip2",
+      "action": "Signup",
+      "details": "User signed up: arshadbusiness099@gmail.com",
+      "created_at": "2026-07-12T07:37:48.953Z"
     }
   ],
   "maintenance_requests": [
