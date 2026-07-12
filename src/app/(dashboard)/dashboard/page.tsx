@@ -147,14 +147,16 @@ export default async function DashboardPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {overdue.length === 0 ? (
-              <div className="py-3 text-sm text-muted-foreground italic">No overdue returns at this time. Good job!</div>
-            ) : (
-              overdue.map((item) => (
+                {overdueAllocations.length === 0 ? (
+                  <div className="py-6 text-sm text-gray-500 dark:text-zinc-400 italic text-center font-medium">
+                    No overdue returns. All good!
+                  </div>
+                ) : (
+                  overdueAllocations.slice(0, 3).map((item: any) => (
                 <div key={item.id} className="flex items-center justify-between p-3 rounded-xl bg-destructive/5 border border-destructive/10 hover:bg-destructive/10 transition-colors">
                   <div>
-                    <p className="text-sm font-semibold">{item.asset}</p>
-                    <p className="text-xs text-muted-foreground">{item.user} {item.dept ? `· ${item.dept}` : ''}</p>
+                    <p className="text-sm font-semibold">{item.asset?.name || 'Unknown'}</p>
+                    <p className="text-xs text-muted-foreground">{item.user?.name || 'Unknown'} {item.asset?.tag ? `· ${item.asset.tag}` : ''}</p>
                   </div>
                   <Badge variant="outline" className="text-xs border-destructive/30 text-destructive">
                     {item.daysOverdue}d overdue
