@@ -23,6 +23,11 @@ class MockQueryBuilder {
     return this;
   }
 
+  in(col: string, val: any[]) {
+    this.filters.push({ type: 'in', col, val });
+    return this;
+  }
+
   order(col: string, { ascending = true } = {}) {
     this.orderCol = col;
     this.orderDesc = !ascending;

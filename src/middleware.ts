@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
-  const isAuthPage = url.pathname === '/login' || url.pathname === '/signup' || url.pathname.startsWith('/api/');
+  const isAuthPage = url.pathname === '/login' || url.pathname === '/signup';
+  const isApiRoute = url.pathname.startsWith('/api/');
 
   const isMock = !process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
 
@@ -48,7 +49,7 @@ export async function middleware(request: NextRequest) {
 
   // Security Redirects
   if (!user) {
-    if (!isAuthPage) {
+    if (!isAuthPage && !isApiRoute) {
       url.pathname = '/login';
       return NextResponse.redirect(url);
     }
@@ -56,7 +57,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If logged in
-  if (isAuthPage || url.pathname === '/') {
+  if (url.pathname === '/') {
     url.pathname = role === 'admin' ? '/admin/org-setup' : '/dashboard';
     return NextResponse.redirect(url);
   }

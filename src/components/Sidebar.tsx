@@ -22,12 +22,12 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'asset_manager', 'department_head', 'employee'] },
-  { href: '/admin/org-setup', label: 'Organization Setup', icon: Settings, roles: ['admin'] },
-  { href: '/assets', label: 'Asset Directory', icon: Package, roles: ['admin', 'asset_manager', 'department_head', 'employee'] },
-  { href: '/assets/register', label: 'Asset Registration', icon: Layers, roles: ['admin', 'asset_manager'] },
-  { href: '/assets/allocate', label: 'Allocation & Transfer', icon: GitMerge, roles: ['admin', 'asset_manager', 'department_head'] },
-  { href: '/bookings', label: 'Resource Bookings', icon: Calendar, roles: ['admin', 'asset_manager', 'department_head', 'employee'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/org-setup', label: 'Organization Setup', icon: Settings },
+  { href: '/assets', label: 'Asset Directory', icon: Package },
+  { href: '/assets?register=true', label: 'Asset Registration', icon: Layers },
+  { href: '/assets?tab=allocate', label: 'Allocation & Transfer', icon: GitMerge },
+  { href: '/bookings', label: 'Resource Bookings', icon: Calendar },
   { href: '/maintenance', label: 'Maintenance Workflows', icon: Wrench, roles: ['admin', 'asset_manager', 'department_head', 'employee'] },
   { href: '/audit', label: 'Asset Audit', icon: ClipboardCheck, roles: ['admin', 'asset_manager'] },
   { href: '/reports', label: 'Reports & Analytics', icon: BarChart2, roles: ['admin', 'asset_manager'] },
@@ -95,15 +95,8 @@ export function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Menu Options</p>
         {navItems
-          .filter((item) => {
-            // Organization Setup is admin-only
-            if (item.href === '/admin/org-setup' && role !== 'admin') {
-              return false;
-            }
-            return true;
-          })
           .map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
+            const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href.split('?')[0]));
             return (
               <Link
                 key={href}

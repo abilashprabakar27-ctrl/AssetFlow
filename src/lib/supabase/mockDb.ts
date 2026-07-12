@@ -6,30 +6,36 @@ const DB_FILE = path.join(process.cwd(), 'src/lib/supabase/mock_db.json');
 
 // Define initial data
 const INITIAL_DEPARTMENTS = [
-  { id: 'd1', name: 'Engineering', code: 'ENG', parent_dept_id: null, employee_count: 2, status: 'active', head_id: 'u3' },
-  { id: 'd2', name: 'Marketing', code: 'MKT', parent_dept_id: null, employee_count: 1, status: 'active', head_id: null },
-  { id: 'd3', name: 'Human Resources', code: 'HR', parent_dept_id: null, employee_count: 1, status: 'active', head_id: null },
+  { id: 'd1', name: 'Engineering', code: 'ENG', parent_dept_id: null, employee_count: 12, status: 'active', head_id: 'u3' },
+  { id: 'd2', name: 'Marketing', code: 'MKT', parent_dept_id: null, employee_count: 5, status: 'active', head_id: null },
+  { id: 'd3', name: 'Human Resources', code: 'HR', parent_dept_id: null, employee_count: 3, status: 'active', head_id: null },
+  { id: 'd4', name: 'Facilities & Ops', code: 'OPS', parent_dept_id: null, employee_count: 8, status: 'active', head_id: 'u2' },
+  { id: 'd5', name: 'Design', code: 'DES', parent_dept_id: null, employee_count: 4, status: 'active', head_id: null },
 ];
 
 const INITIAL_USERS = [
   { id: 'u1', name: 'System Admin', email: 'admin@assetflow.com', password: 'password123', role: 'admin', department_id: null, status: 'active' },
-  { id: 'u2', name: 'Asset Manager', email: 'manager@assetflow.com', password: 'password123', role: 'asset_manager', department_id: null, status: 'active' },
+  { id: 'u2', name: 'Asset Manager', email: 'manager@assetflow.com', password: 'password123', role: 'asset_manager', department_id: 'd4', status: 'active' },
   { id: 'u3', name: 'Priya Sharma (Head)', email: 'head@assetflow.com', password: 'password123', role: 'department_head', department_id: 'd1', status: 'active' },
   { id: 'u4', name: 'Raj Patel (Employee)', email: 'employee@assetflow.com', password: 'password123', role: 'employee', department_id: 'd1', status: 'active' },
 ];
 
 const INITIAL_CATEGORIES = [
-  { id: 'c1', name: 'Electronics', description: 'Computers, screens, peripherals', custom_fields: { warranty_months: 24, manufacturer: 'Apple' }, status: 'active' },
-  { id: 'c2', name: 'Furniture', description: 'Desks, chairs, whiteboards', custom_fields: { material: 'Wood', dimensions: '120x80cm' }, status: 'active' },
-  { id: 'c3', name: 'Vehicles', description: 'Company cars, vans', custom_fields: { next_service: '2026-12-01' }, status: 'active' },
+  { id: 'c1', name: 'Computers & Laptops', description: 'MacBooks, Dell XPS, ThinkPads', custom_fields: { RAM: '16GB', Storage: '512GB SSD', OS: 'macOS' }, status: 'active' },
+  { id: 'c2', name: 'Meeting Rooms', description: 'Conference and Huddle rooms', custom_fields: { Capacity: '8', Has_Video_Conferencing: 'Yes' }, status: 'active' },
+  { id: 'c3', name: 'Company Vehicles', description: 'Cars, vans, and transport', custom_fields: { License_Plate: '', Next_Service: '2026-12-01' }, status: 'active' },
+  { id: 'c4', name: 'Office Furniture', description: 'Standing desks, ergonomic chairs', custom_fields: { Material: 'Wood/Metal', Ergonomic: 'Yes' }, status: 'active' },
+  { id: 'c5', name: 'A/V Equipment', description: 'Projectors, Cameras, Mics', custom_fields: { Resolution: '4K', Wireless: 'Yes' }, status: 'active' },
 ];
 
 const INITIAL_ASSETS = [
-  { id: 'a1', tag: 'AF-0001', name: 'MacBook Pro 16"', serial: 'C02F234XMD6M', category_id: 'c1', department_id: 'd1', status: 'allocated', is_bookable: false, created_at: '2026-01-01T00:00:00Z', condition: 'Excellent', location: 'HQ - Floor 3', cost: 2499 },
-  { id: 'a2', tag: 'AF-0002', name: 'Conference Room Projector', serial: 'PRJ998231', category_id: 'c1', department_id: 'd1', status: 'available', is_bookable: true, created_at: '2026-02-15T00:00:00Z', condition: 'Good', location: 'HQ - Meeting Room A', cost: 850 },
-  { id: 'a3', tag: 'AF-0003', name: 'Tesla Model 3', serial: '5YJ3E1EA1KF', category_id: 'c3', department_id: null, status: 'available', is_bookable: true, created_at: '2026-03-10T00:00:00Z', condition: 'Excellent', location: 'HQ - Parking Lot B', cost: 38000 },
-  { id: 'a4', tag: 'AF-0004', name: 'Ergonomic Office Chair', serial: 'CHR112233', category_id: 'c2', department_id: 'd2', status: 'allocated', is_bookable: false, created_at: '2026-04-01T00:00:00Z', condition: 'Fair', location: 'HQ - Floor 2', cost: 350 },
-  { id: 'a5', tag: 'AF-0005', name: 'Dell UltraSharp 27"', serial: 'CN0837482', category_id: 'c1', department_id: 'd1', status: 'available', is_bookable: false, created_at: '2026-01-10T00:00:00Z', condition: 'Good', location: 'HQ - Floor 3', cost: 450 },
+  { id: 'a1', tag: 'AF-0001', name: 'MacBook Pro M3 Max 16"', serial: 'C02F234XMD6M', category_id: 'c1', department_id: 'd1', status: 'allocated', is_bookable: false, created_at: '2026-01-01T00:00:00Z', condition: 'Excellent', location: 'HQ - Floor 3', cost: 3499 },
+  { id: 'a2', tag: 'AF-0002', name: 'Conference Room: "Apollo"', serial: 'RM-401', category_id: 'c2', department_id: 'd4', status: 'available', is_bookable: true, created_at: '2026-02-15T00:00:00Z', condition: 'Good', location: 'HQ - Floor 4', cost: 0 },
+  { id: 'a3', tag: 'AF-0003', name: 'Tesla Model 3 Long Range', serial: '5YJ3E1EA1KF', category_id: 'c3', department_id: 'd4', status: 'available', is_bookable: true, created_at: '2026-03-10T00:00:00Z', condition: 'Excellent', location: 'HQ - Parking Lot B', cost: 48000 },
+  { id: 'a4', tag: 'AF-0004', name: 'Herman Miller Aeron Chair', serial: 'CHR112233', category_id: 'c4', department_id: 'd1', status: 'allocated', is_bookable: false, created_at: '2026-04-01T00:00:00Z', condition: 'Fair', location: 'HQ - Floor 3', cost: 1250 },
+  { id: 'a5', tag: 'AF-0005', name: 'Sony A7S III Camera', serial: 'SNY0837482', category_id: 'c5', department_id: 'd2', status: 'available', is_bookable: true, created_at: '2026-01-10T00:00:00Z', condition: 'Excellent', location: 'HQ - Media Room', cost: 3498 },
+  { id: 'a6', tag: 'AF-0006', name: 'Dell XPS 15', serial: 'DL9928374', category_id: 'c1', department_id: 'd1', status: 'available', is_bookable: false, created_at: '2026-05-12T00:00:00Z', condition: 'Good', location: 'HQ - IT Storage', cost: 1899 },
+  { id: 'a7', tag: 'AF-0007', name: 'Huddle Room: "Gemini"', serial: 'RM-305', category_id: 'c2', department_id: 'd4', status: 'available', is_bookable: true, created_at: '2026-06-20T00:00:00Z', condition: 'Excellent', location: 'HQ - Floor 3', cost: 0 },
 ];
 
 const INITIAL_ALLOCATIONS = [
@@ -59,6 +65,10 @@ const INITIAL_AUDIT_LOGS = [
   { id: 'aul1', audit_cycle_id: 'au1', asset_id: 'a1', status: 'verified', notes: 'Asset in hand, clean condition', audited_by: 'u2', audited_at: '2026-07-12T05:30:00Z' },
 ];
 
+const INITIAL_TRANSFER_REQUESTS = [
+  { id: 'tr1', asset_id: 'a1', requester_id: 'u3', from_user_id: 'u4', status: 'pending', created_at: '2026-07-12T08:00:00Z', notes: 'Need this for project X' }
+];
+
 export interface MockDbState {
   departments: typeof INITIAL_DEPARTMENTS;
   users: typeof INITIAL_USERS;
@@ -70,6 +80,7 @@ export interface MockDbState {
   maintenance_requests: typeof INITIAL_MAINTENANCE;
   audit_cycles: typeof INITIAL_AUDITS;
   audit_asset_logs: typeof INITIAL_AUDIT_LOGS;
+  transfer_requests: typeof INITIAL_TRANSFER_REQUESTS;
 }
 
 export function readDb(): MockDbState {
@@ -90,6 +101,7 @@ export function readDb(): MockDbState {
         maintenance_requests: INITIAL_MAINTENANCE,
         audit_cycles: INITIAL_AUDITS,
         audit_asset_logs: INITIAL_AUDIT_LOGS,
+        transfer_requests: INITIAL_TRANSFER_REQUESTS,
       });
     }
     const data = fs.readFileSync(DB_FILE, 'utf-8');
@@ -107,6 +119,7 @@ export function readDb(): MockDbState {
       maintenance_requests: INITIAL_MAINTENANCE,
       audit_cycles: INITIAL_AUDITS,
       audit_asset_logs: INITIAL_AUDIT_LOGS,
+      transfer_requests: INITIAL_TRANSFER_REQUESTS,
     };
   }
 }
@@ -130,6 +143,8 @@ export function executeQuery(action: string, table: keyof MockDbState, body: any
       for (const filter of body.filters) {
         if (filter.type === 'eq') {
           data = data.filter((row) => row[filter.col] === filter.val);
+        } else if (filter.type === 'in') {
+          data = data.filter((row) => filter.val.includes(row[filter.col]));
         }
       }
     }
@@ -186,6 +201,13 @@ export function executeQuery(action: string, table: keyof MockDbState, body: any
         asset: db.assets.find((a) => a.id === m.asset_id) || null,
         reporter: db.users.find((u) => u.id === m.reporter_id) || null,
         technician: m.technician_id ? db.users.find((u) => u.id === m.technician_id) || null : null,
+      }));
+    } else if (table === 'transfer_requests') {
+      data = data.map((tr) => ({
+        ...tr,
+        asset: db.assets.find((a) => a.id === tr.asset_id) || null,
+        requester: db.users.find((u) => u.id === tr.requester_id) || null,
+        from_user: db.users.find((u) => u.id === tr.from_user_id) || null,
       }));
     }
 

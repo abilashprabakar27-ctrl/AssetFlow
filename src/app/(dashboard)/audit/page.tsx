@@ -261,11 +261,22 @@ export default function AuditCyclesPage() {
   const locations = Array.from(new Set(assets.map(a => a.location).filter(Boolean)));
 
   return (
-    <div className="container mx-auto py-6 px-4 space-y-8">
+    <div className="relative min-h-screen p-6 lg:p-8 space-y-8 overflow-hidden">
+      {/* Background blobs */}
+      <div className="absolute top-[-5%] right-[-5%] w-[400px] h-[400px] rounded-full bg-blue-500/8 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/8 blur-[120px] pointer-events-none" />
+
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Structured Asset Audits</h1>
-        <p className="text-gray-500">Run scheduled inventory verification cycles and auto-compile discrepancy reports.</p>
+      <div className="relative z-10 flex items-center gap-3 opacity-0 animate-slide-up" style={{ animationFillMode: 'forwards' }}>
+        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-animated shadow-glow-blue flex-shrink-0">
+          <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+        </div>
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight">Structured Asset Audits</h1>
+          <p className="text-muted-foreground text-sm mt-1">Run scheduled inventory verification cycles and compile discrepancy reports.</p>
+        </div>
       </div>
 
       {successMsg && (
@@ -285,17 +296,17 @@ export default function AuditCyclesPage() {
           {isManagerOrAdmin && <TabsTrigger value="create-cycle">Create Cycle</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="active-cycles">
-          <Card className="border border-gray-200 shadow-xs bg-white overflow-hidden">
+        <TabsContent value="active-cycles" className="mt-6">
+          <Card className="border-border/60 bg-card/70 backdrop-blur-sm overflow-hidden opacity-0 animate-slide-up anim-delay-200" style={{ animationFillMode: 'forwards' }}>
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Cycle Name</TableHead>
-                  <TableHead>Scope Scope</TableHead>
-                  <TableHead>Target Scope</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="font-bold text-xs">Cycle Name</TableHead>
+                  <TableHead className="font-bold text-xs">Scope Type</TableHead>
+                  <TableHead className="font-bold text-xs">Target Scope</TableHead>
+                  <TableHead className="font-bold text-xs">Due Date</TableHead>
+                  <TableHead className="font-bold text-xs">Status</TableHead>
+                  <TableHead className="text-right font-bold text-xs">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -307,18 +318,18 @@ export default function AuditCyclesPage() {
                   auditCycles.map((cycle) => {
                     const deptName = departments.find(d => d.id === cycle.scope_id)?.name;
                     return (
-                      <TableRow key={cycle.id}>
-                        <TableCell className="font-semibold text-gray-900">{cycle.name}</TableCell>
-                        <TableCell className="capitalize">{cycle.scope_type}</TableCell>
-                        <TableCell>{cycle.scope_type === 'department' ? deptName || 'Unassigned' : cycle.scope_id}</TableCell>
-                        <TableCell>{new Date(cycle.due_date).toLocaleDateString()}</TableCell>
+                      <TableRow key={cycle.id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="font-semibold text-foreground text-sm">{cycle.name}</TableCell>
+                        <TableCell className="capitalize text-xs text-muted-foreground font-medium">{cycle.scope_type}</TableCell>
+                        <TableCell className="text-xs">{cycle.scope_type === 'department' ? deptName || 'Unassigned' : cycle.scope_id}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground font-medium">{new Date(cycle.due_date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Badge variant={cycle.status === 'active' ? 'default' : 'secondary'} className="capitalize">
+                          <Badge variant={cycle.status === 'active' ? 'default' : 'secondary'} className={cn("capitalize text-[10px] font-bold", cycle.status === 'active' ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30' : '')}>
                             {cycle.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => handleOpenAuditCycle(cycle)}>
+                          <Button variant="outline" size="sm" onClick={() => handleOpenAuditCycle(cycle)} className="h-8 rounded-lg text-xs font-semibold hover:scale-[1.02] transition-transform">
                             {cycle.status === 'active' ? 'Run Audit' : 'View Report'}
                           </Button>
                         </TableCell>
@@ -331,12 +342,13 @@ export default function AuditCyclesPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="create-cycle">
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="md:col-span-1 border border-gray-200 shadow-xs">
-              <CardHeader>
-                <CardTitle>Schedule Verification Cycle</CardTitle>
-                <CardDescription>Assign auditors to verify asset locations and conditions.</CardDescription>
+        <TabsContent value="create-cycle" className="mt-6">
+          <div className="grid md:grid-cols-3 gap-6 opacity-0 animate-slide-up anim-delay-200" style={{ animationFillMode: 'forwards' }}>
+            <Card className="md:col-span-1 border-border/60 bg-card/70 backdrop-blur-sm shadow-glass overflow-hidden relative">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-animated" />
+              <CardHeader className="pt-6">
+                <CardTitle className="text-lg font-bold tracking-tight">Schedule Cycle</CardTitle>
+                <CardDescription className="text-xs">Assign auditors to verify locations/departments.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateCycle} className="space-y-4">
@@ -407,27 +419,30 @@ export default function AuditCyclesPage() {
                     <Input id="due-date" type="date" required value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="bg-white text-black" />
                   </div>
 
-                  <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={loading}>
+                  <Button type="submit" className="w-full h-10 mt-2 bg-gradient-animated text-white font-bold shadow-glow-blue hover:scale-[1.01] transition-all duration-200 rounded-xl" disabled={loading}>
                     Initialize Cycle
                   </Button>
                 </form>
               </CardContent>
             </Card>
 
-            <Card className="md:col-span-2 border border-gray-200 shadow-xs bg-gray-50/30 p-6 flex flex-col justify-center">
-              <h3 className="font-bold text-gray-900 text-lg mb-3">Structured Audits Overview</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Structured Auditing allows organization managers to assign specific employees to run audit reviews. 
-                Unlike ad-hoc inventory reviews, verification cycles freeze reports and log actions cleanly.
-              </p>
-              <div className="grid grid-cols-2 gap-4 text-xs font-semibold uppercase text-gray-500 tracking-wider">
-                <div className="border bg-white p-3 rounded-lg">
-                  <span className="text-blue-600 block text-lg font-bold mb-1">Verify status</span>
-                  Logs physical custody matches records.
-                </div>
-                <div className="border bg-white p-3 rounded-lg">
-                  <span className="text-red-600 block text-lg font-bold mb-1">Auto lost conversion</span>
-                  Closing the audit triggers automatic updates to missing asset inventories.
+            <Card className="md:col-span-2 border-border/60 bg-card/70 backdrop-blur-sm p-8 flex flex-col justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-blue-500/5 dark:bg-blue-500/10 pointer-events-none" />
+              <div className="relative z-10">
+                <h3 className="font-bold text-lg mb-3">Structured Audits Overview</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Structured Auditing allows organization managers to assign specific employees to run audit reviews. 
+                  Unlike ad-hoc inventory reviews, verification cycles freeze reports and log actions cleanly.
+                </p>
+                <div className="grid grid-cols-2 gap-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="border border-border/50 bg-background/50 p-4 rounded-xl shadow-sm">
+                    <span className="text-blue-600 dark:text-blue-400 block text-lg font-bold mb-1.5 capitalize">Verify Status</span>
+                    <span className="normal-case font-medium">Logs physical custody matches records.</span>
+                  </div>
+                  <div className="border border-border/50 bg-background/50 p-4 rounded-xl shadow-sm">
+                    <span className="text-red-600 dark:text-red-400 block text-lg font-bold mb-1.5 capitalize">Auto Lost Conversion</span>
+                    <span className="normal-case font-medium">Closing triggers updates to missing inventories.</span>
+                  </div>
                 </div>
               </div>
             </Card>

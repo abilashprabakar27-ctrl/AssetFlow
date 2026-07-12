@@ -5,7 +5,7 @@
       "name": "Engineering",
       "code": "ENG",
       "parent_dept_id": null,
-      "employee_count": 2,
+      "employee_count": 12,
       "status": "active",
       "head_id": "u3"
     },
@@ -14,7 +14,7 @@
       "name": "Marketing",
       "code": "MKT",
       "parent_dept_id": null,
-      "employee_count": 1,
+      "employee_count": 5,
       "status": "active",
       "head_id": null
     },
@@ -23,7 +23,25 @@
       "name": "Human Resources",
       "code": "HR",
       "parent_dept_id": null,
-      "employee_count": 1,
+      "employee_count": 3,
+      "status": "active",
+      "head_id": null
+    },
+    {
+      "id": "d4",
+      "name": "Facilities & Ops",
+      "code": "OPS",
+      "parent_dept_id": null,
+      "employee_count": 8,
+      "status": "active",
+      "head_id": "u2"
+    },
+    {
+      "id": "d5",
+      "name": "Design",
+      "code": "DES",
+      "parent_dept_id": null,
+      "employee_count": 4,
       "status": "active",
       "head_id": null
     }
@@ -44,7 +62,7 @@
       "email": "manager@assetflow.com",
       "password": "password123",
       "role": "asset_manager",
-      "department_id": null,
+      "department_id": "d4",
       "status": "active"
     },
     {
@@ -66,19 +84,10 @@
       "status": "active"
     },
     {
-      "id": "u_yekyf9okx",
-      "name": "Test User",
-      "email": "test@example.com",
-      "password": "password123",
-      "role": "employee",
-      "department_id": null,
-      "status": "active"
-    },
-    {
-      "id": "u_0vmodvip2",
-      "name": "Arshad",
-      "email": "arshadbusiness099@gmail.com",
-      "password": "arshad123",
+      "id": "u_1kttim2uj",
+      "name": "PLS WORK",
+      "email": "plswork@gmail.com",
+      "password": "please123",
       "role": "employee",
       "department_id": null,
       "status": "active"
@@ -87,30 +96,52 @@
   "asset_categories": [
     {
       "id": "c1",
-      "name": "Electronics",
-      "description": "Computers, screens, peripherals",
+      "name": "Computers & Laptops",
+      "description": "MacBooks, Dell XPS, ThinkPads",
       "custom_fields": {
-        "warranty_months": 24,
-        "manufacturer": "Apple"
+        "RAM": "16GB",
+        "Storage": "512GB SSD",
+        "OS": "macOS"
       },
       "status": "active"
     },
     {
       "id": "c2",
-      "name": "Furniture",
-      "description": "Desks, chairs, whiteboards",
+      "name": "Meeting Rooms",
+      "description": "Conference and Huddle rooms",
       "custom_fields": {
-        "material": "Wood",
-        "dimensions": "120x80cm"
+        "Capacity": "8",
+        "Has_Video_Conferencing": "Yes"
       },
       "status": "active"
     },
     {
       "id": "c3",
-      "name": "Vehicles",
-      "description": "Company cars, vans",
+      "name": "Company Vehicles",
+      "description": "Cars, vans, and transport",
       "custom_fields": {
-        "next_service": "2026-12-01"
+        "License_Plate": "",
+        "Next_Service": "2026-12-01"
+      },
+      "status": "active"
+    },
+    {
+      "id": "c4",
+      "name": "Office Furniture",
+      "description": "Standing desks, ergonomic chairs",
+      "custom_fields": {
+        "Material": "Wood/Metal",
+        "Ergonomic": "Yes"
+      },
+      "status": "active"
+    },
+    {
+      "id": "c5",
+      "name": "A/V Equipment",
+      "description": "Projectors, Cameras, Mics",
+      "custom_fields": {
+        "Resolution": "4K",
+        "Wireless": "Yes"
       },
       "status": "active"
     }
@@ -119,7 +150,7 @@
     {
       "id": "a1",
       "tag": "AF-0001",
-      "name": "MacBook Pro 16\"",
+      "name": "MacBook Pro M3 Max 16\"",
       "serial": "C02F234XMD6M",
       "category_id": "c1",
       "department_id": "d1",
@@ -128,63 +159,109 @@
       "created_at": "2026-01-01T00:00:00Z",
       "condition": "Excellent",
       "location": "HQ - Floor 3",
-      "cost": 2499
+      "cost": 3499
     },
     {
       "id": "a2",
       "tag": "AF-0002",
-      "name": "Conference Room Projector",
-      "serial": "PRJ998231",
-      "category_id": "c1",
-      "department_id": "d1",
+      "name": "Conference Room: \"Apollo\"",
+      "serial": "RM-401",
+      "category_id": "c2",
+      "department_id": "d4",
       "status": "available",
       "is_bookable": true,
       "created_at": "2026-02-15T00:00:00Z",
       "condition": "Good",
-      "location": "HQ - Meeting Room A",
-      "cost": 850
+      "location": "HQ - Floor 4",
+      "cost": 0
     },
     {
       "id": "a3",
       "tag": "AF-0003",
-      "name": "Tesla Model 3",
+      "name": "Tesla Model 3 Long Range",
       "serial": "5YJ3E1EA1KF",
       "category_id": "c3",
-      "department_id": null,
+      "department_id": "d4",
       "status": "available",
       "is_bookable": true,
       "created_at": "2026-03-10T00:00:00Z",
       "condition": "Excellent",
       "location": "HQ - Parking Lot B",
-      "cost": 38000
+      "cost": 48000
     },
     {
       "id": "a4",
       "tag": "AF-0004",
-      "name": "Ergonomic Office Chair",
+      "name": "Herman Miller Aeron Chair",
       "serial": "CHR112233",
-      "category_id": "c2",
-      "department_id": "d2",
+      "category_id": "c4",
+      "department_id": "d1",
       "status": "allocated",
       "is_bookable": false,
       "created_at": "2026-04-01T00:00:00Z",
       "condition": "Fair",
-      "location": "HQ - Floor 2",
-      "cost": 350
+      "location": "HQ - Floor 3",
+      "cost": 1250
     },
     {
       "id": "a5",
       "tag": "AF-0005",
-      "name": "Dell UltraSharp 27\"",
-      "serial": "CN0837482",
+      "name": "Sony A7S III Camera",
+      "serial": "SNY0837482",
+      "category_id": "c5",
+      "department_id": "d2",
+      "status": "available",
+      "is_bookable": true,
+      "created_at": "2026-01-10T00:00:00Z",
+      "condition": "Excellent",
+      "location": "HQ - Media Room",
+      "cost": 3498
+    },
+    {
+      "id": "a6",
+      "tag": "AF-0006",
+      "name": "Dell XPS 15",
+      "serial": "DL9928374",
       "category_id": "c1",
       "department_id": "d1",
       "status": "available",
       "is_bookable": false,
-      "created_at": "2026-01-10T00:00:00Z",
+      "created_at": "2026-05-12T00:00:00Z",
       "condition": "Good",
+      "location": "HQ - IT Storage",
+      "cost": 1899
+    },
+    {
+      "id": "a7",
+      "tag": "AF-0007",
+      "name": "Huddle Room: \"Gemini\"",
+      "serial": "RM-305",
+      "category_id": "c2",
+      "department_id": "d4",
+      "status": "available",
+      "is_bookable": true,
+      "created_at": "2026-06-20T00:00:00Z",
+      "condition": "Excellent",
       "location": "HQ - Floor 3",
-      "cost": 450
+      "cost": 0
+    },
+    {
+      "id": "xani1s02f",
+      "created_at": "2026-07-12T11:00:22.009Z",
+      "tag": "AF-0008",
+      "name": "Arya Speaker",
+      "serial": "553",
+      "category_id": "c2",
+      "department_id": "d2",
+      "status": "available",
+      "is_bookable": true,
+      "condition": "Excellent",
+      "location": "HQ - Floor 3",
+      "cost": 500,
+      "custom_fields": {
+        "Capacity": "500",
+        "Has_Video_Conferencing": "yes"
+      }
     }
   ],
   "allocations": [
@@ -245,18 +322,18 @@
       "created_at": "2026-07-12T04:15:00Z"
     },
     {
-      "id": "l_wgpx3z2kh",
-      "user_id": "u_yekyf9okx",
+      "id": "l_epwlzwtpx",
+      "user_id": "u_1kttim2uj",
       "action": "Signup",
-      "details": "User signed up: test@example.com",
-      "created_at": "2026-07-12T06:46:12.539Z"
+      "details": "User signed up: plswork@gmail.com",
+      "created_at": "2026-07-12T10:58:26.954Z"
     },
     {
-      "id": "l_ibxr58r8m",
-      "user_id": "u_0vmodvip2",
-      "action": "Signup",
-      "details": "User signed up: arshadbusiness099@gmail.com",
-      "created_at": "2026-07-12T07:37:48.953Z"
+      "id": "996mvgadf",
+      "created_at": "2026-07-12T11:01:10.345Z",
+      "user_id": "u_1kttim2uj",
+      "action": "Register Asset",
+      "details": "Registered asset AF-0008: Arya Speaker"
     }
   ],
   "maintenance_requests": [
@@ -296,6 +373,17 @@
       "notes": "Asset in hand, clean condition",
       "audited_by": "u2",
       "audited_at": "2026-07-12T05:30:00Z"
+    }
+  ],
+  "transfer_requests": [
+    {
+      "id": "tr1",
+      "asset_id": "a1",
+      "requester_id": "u3",
+      "from_user_id": "u4",
+      "status": "pending",
+      "created_at": "2026-07-12T08:00:00Z",
+      "notes": "Need this for project X"
     }
   ]
 }

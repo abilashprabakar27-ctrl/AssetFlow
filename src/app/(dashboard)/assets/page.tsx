@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,7 +30,16 @@ import {
 } from 'lucide-react';
 
 export default function AssetDirectoryPage() {
+  return (
+    <Suspense fallback={<div className="p-8">Loading...</div>}>
+      <AssetDirectoryContent />
+    </Suspense>
+  );
+}
+
+function AssetDirectoryContent() {
   const supabase = createClient();
+  const searchParams = useSearchParams();
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   // Tabs & Routing State
@@ -128,17 +138,14 @@ export default function AssetDirectoryPage() {
 
   // Handle auto-open register panel and active tabs via query parameters (Sidebar integration)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      const tabParam = params.get('tab');
-      if (tabParam) {
-        setActiveTab(tabParam);
-      }
-      if (params.get('register') === 'true') {
-        setIsRegisterOpen(true);
-      }
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
     }
-  }, []);
+    if (searchParams.get('register') === 'true') {
+      setIsRegisterOpen(true);
+    }
+  }, [searchParams]);
 
   // Load History for Selected Asset
   const loadAssetDetails = async (asset: any) => {
@@ -1028,6 +1035,20 @@ export default function AssetDirectoryPage() {
                       <SelectItem value="Poor" className="text-xs">Poor/Damaged</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2 border border-border/50 bg-background/50 p-4 rounded-xl dark:border-zinc-800 dark:bg-zinc-950">
+                <input 
+                  type="checkbox" 
+                  id="is-bookable" 
+                  checked={isBookable}
+                  onChange={(e) => setIsBookable(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary dark:border-zinc-700 dark:bg-zinc-800"
+                />
+                <div className="grid gap-1.5 leading-none">
+                  <Label htmlFor="is-bookable" className="text-sm font-bold text-foreground">Make Bookable</Label>
+                  <p className="text-xs text-muted-foreground">Allow employees to reserve this asset for specific time slots.</p>
                 </div>
               </div>
             </form>

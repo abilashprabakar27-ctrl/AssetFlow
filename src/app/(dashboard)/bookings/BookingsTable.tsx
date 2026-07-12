@@ -27,8 +27,11 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
   };
 
   const statusColors: Record<string, string> = {
-    active: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400 dark:border-emerald-500/20',
-    cancelled: 'bg-muted text-muted-foreground border-border',
+    upcoming:  'bg-blue-500/15 text-blue-600 border-blue-500/30 dark:text-blue-400',
+    ongoing:   'bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400',
+    active:    'bg-emerald-500/15 text-emerald-600 border-emerald-500/30 dark:text-emerald-400',
+    completed: 'bg-muted text-muted-foreground border-border/40',
+    cancelled: 'bg-rose-500/10 text-rose-500 border-rose-500/20 dark:text-rose-400',
   };
 
   return (
@@ -70,7 +73,7 @@ export function BookingsTable({ bookings }: BookingsTableProps) {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  {booking.status === 'active' && (
+                  {(booking.status === 'upcoming' || booking.status === 'active' || booking.status === 'ongoing') && (
                     <Button 
                       variant="destructive" 
                       size="sm" 

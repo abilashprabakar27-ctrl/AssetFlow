@@ -5,8 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
 const bookingSchema = z.object({
-  resourceId: z.string().uuid(),
-  userId: z.string().uuid(),
+  resourceId: z.string().min(1, 'Resource is required'),
+  userId: z.string().min(1, 'User is required'),
   startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Invalid start time',
   }),
@@ -19,9 +19,8 @@ export async function fetchBookableAssets() {
   const supabase = createClient();
   const { data, error } = await supabase
     .from('assets')
-    .select('id, name, tag')
-    .eq('is_bookable', true)
-    .eq('status', 'available');
+    .select('id, name, tag, status')
+    .eq('is_bookable', true);
 
   if (error) {
     console.error('Error fetching bookable assets:', error);
@@ -107,13 +106,11 @@ export async function createBooking(prevState: { success: boolean; error: string
     return { success: false, error: 'Start time must be before end time.' };
   }
 
-  // Handshake 2: RBAC Check
-  // If employee: can only book for their own ID
+  // RBAC Check
   if (userProfile.role === 'employee' && userId !== userProfile.id) {
     return { success: false, error: 'Employees can only book for themselves.' };
   }
 
-  // If department_head: allow booking for self OR their department_id matching the target user's department_id
   if (userProfile.role === 'department_head' && userId !== userProfile.id) {
     const { data: targetUser, error: targetError } = await supabase
       .from('users')
@@ -130,7 +127,35 @@ export async function createBooking(prevState: { success: boolean; error: string
     }
   }
 
-  // Insert Booking and check for overlapping booking via Postgres Exclude Constraint (or DB return check)
+  // Overlap Detection — fetch all active/upcoming bookings for this resource
+  const { data: existingBookings } = await supabase
+    .from('bookings')
+    .select('id, start_time, end_time, status')
+    .eq('resource_id', resourceId);
+
+  const newStart = new Date(startTime).getTime();
+  const newEnd = new Date(endTime).getTime();
+
+  const overlapping = (existingBookings || []).filter((b: any) => {
+    if (b.status === 'cancelled' || b.status === 'completed') return false;
+    const bStart = new Date(b.start_time).getTime();
+    const bEnd = new Date(b.end_time).getTime();
+    // Overlap: new starts before existing ends AND new ends after existing starts
+    // End-to-start (bEnd === newStart) is NOT an overlap (spec: 10:00 end → 10:00 start is allowed)
+    return newStart < bEnd && newEnd > bStart;
+  });
+
+  if (overlapping.length > 0) {
+    const clash = overlapping[0];
+    const clashStart = new Date(clash.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const clashEnd = new Date(clash.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return { success: false, error: `This resource is already booked from ${clashStart} to ${clashEnd}. Please choose a different time.` };
+  }
+
+  // Get resource name for the log
+  const { data: resourceData } = await supabase.from('assets').select('name, tag').eq('id', resourceId).single();
+  const resourceLabel = resourceData ? `${resourceData.name} (${resourceData.tag})` : resourceId;
+
   const { error: insertError } = await supabase
     .from('bookings')
     .insert([
@@ -139,24 +164,21 @@ export async function createBooking(prevState: { success: boolean; error: string
         user_id: userId,
         start_time: startTime,
         end_time: endTime,
-        status: 'active',
+        status: 'upcoming',
       },
     ]);
 
   if (insertError) {
     console.error('Error inserting booking:', insertError);
-    if (insertError.code === '23P01') {
-      return { success: false, error: 'This resource is already booked during the selected timeframe.' };
-    }
     return { success: false, error: insertError.message || 'Failed to create booking.' };
   }
 
-  // Create Activity Log
+  // Activity Log
   await supabase.from('activity_logs').insert([
     {
       user_id: userProfile.id,
       action: 'Create Booking',
-      details: `Booked resource ${resourceId} for user ${userId} from ${startTime} to ${endTime}`,
+      details: `Booked ${resourceLabel} from ${new Date(startTime).toLocaleString()} to ${new Date(endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
     },
   ]);
 
