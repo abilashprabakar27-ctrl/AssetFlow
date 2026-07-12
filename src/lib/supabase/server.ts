@@ -79,8 +79,9 @@ const serverMockAuth = () => {
         if (!sessionVal) {
           return { data: { user: null }, error: null };
         }
+        const userId = sessionVal.split(':')[0];
         const db = readDb();
-        const user = db.users.find((u) => u.id === sessionVal);
+        const user = db.users.find((u) => u.id === userId);
         if (!user) {
           return { data: { user: null }, error: null };
         }
