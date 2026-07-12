@@ -9,6 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Settings2,
+  Database,
+  Building,
+  CheckCircle,
+  HelpCircle,
+  Tag
+} from 'lucide-react';
 
 export default function RegisterAssetPage() {
   const router = useRouter();
@@ -138,69 +148,123 @@ export default function RegisterAssetPage() {
   };
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-2xl">
-      <Card className="shadow-xs border border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Register New Asset</CardTitle>
-          <CardDescription>Add a new physical asset or bookable resource to the corporate ledger.</CardDescription>
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+      {/* Back button */}
+      <Link href="/assets" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 transition-colors font-medium">
+        <ArrowLeft className="h-4 w-4" />
+        <span>Return to directory</span>
+      </Link>
+
+      <Card className="shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/60 rounded-3xl overflow-hidden">
+        {/* Header decoration */}
+        <div className="h-2 bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 w-full" />
+        
+        <CardHeader className="p-8 pb-4">
+          <CardTitle className="text-2xl font-extrabold font-heading text-slate-900 flex items-center gap-2">
+            <Database className="h-6 w-6 text-indigo-600" />
+            <span>Register New Asset</span>
+          </CardTitle>
+          <CardDescription className="text-slate-500 mt-1">
+            Add a new physical asset or bookable resource to the corporate ledger.
+          </CardDescription>
         </CardHeader>
+        
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
+          <CardContent className="p-8 pt-4 space-y-6">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
+              <div className="p-4 text-sm text-rose-600 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-2 animate-shake">
+                <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="tag">Asset Tag</Label>
-                <Input id="tag" value={nextTag} disabled className="bg-gray-100 font-semibold" />
+            {/* General Settings Section */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono border-b pb-1.5 flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                <span>Identity Settings</span>
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="tag" className="text-slate-700 font-semibold text-xs">Asset Tag</Label>
+                  <Input 
+                    id="tag" 
+                    value={nextTag} 
+                    disabled 
+                    className="bg-indigo-50/50 border-indigo-100 font-bold text-indigo-700 h-11 rounded-xl cursor-not-allowed font-mono text-sm" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="serial" className="text-slate-700 font-semibold text-xs">Serial Number</Label>
+                  <Input 
+                    id="serial" 
+                    placeholder="S/N or Unique ID" 
+                    value={serial} 
+                    onChange={(e) => setSerial(e.target.value)} 
+                    className="h-11 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  />
+                </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="serial">Serial Number</Label>
-                <Input id="serial" placeholder="S/N or Unique ID" value={serial} onChange={(e) => setSerial(e.target.value)} />
-              </div>
-            </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Asset Name / Title</Label>
-              <Input id="name" placeholder="e.g. MacBook Pro 14-inch" required value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="category">Category</Label>
-                <Select onValueChange={(val) => { if (typeof val === 'string') handleCategoryChange(val); }} required>
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-slate-700 font-semibold text-xs">Asset Name / Title *</Label>
+                <Input 
+                  id="name" 
+                  placeholder="e.g. MacBook Pro 14-inch" 
+                  required 
+                  value={name} 
+                  onChange={(e) => setName(e.target.value)} 
+                  className="h-11 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cost">Acquisition Cost ($)</Label>
-                <Input id="cost" type="number" step="0.01" placeholder="0.00" value={cost} onChange={(e) => setCost(e.target.value)} />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category" className="text-slate-700 font-semibold text-xs">Category *</Label>
+                  <Select onValueChange={(val) => { if (typeof val === 'string') handleCategoryChange(val); }} required>
+                    <SelectTrigger id="category" className="h-11 rounded-xl border-slate-200">
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cost" className="text-slate-700 font-semibold text-xs">Acquisition Cost (USD)</Label>
+                  <Input 
+                    id="cost" 
+                    type="number" 
+                    step="0.01" 
+                    placeholder="0.00" 
+                    value={cost} 
+                    onChange={(e) => setCost(e.target.value)} 
+                    className="h-11 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  />
+                </div>
               </div>
             </div>
 
             {/* Dynamic Custom Fields Section */}
             {selectedCategory?.custom_fields && Object.keys(selectedCategory.custom_fields).length > 0 && (
-              <div className="border border-blue-100 bg-blue-50/20 p-4 rounded-lg space-y-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-700">Category-Specific Specifications ({selectedCategory.name})</h3>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="border border-indigo-100 bg-indigo-50/10 p-5 rounded-2xl space-y-4 animate-fade-in">
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-indigo-600 font-mono flex items-center gap-2">
+                  <Sparkles className="h-4.5 w-4.5 text-indigo-500 animate-pulse-slow" />
+                  <span>Category-Specific Specifications ({selectedCategory.name})</span>
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
                   {Object.keys(selectedCategory.custom_fields).map((key) => (
-                    <div key={key} className="space-y-1.5">
-                      <Label htmlFor={`custom-${key}`} className="capitalize">{key.replace('_', ' ')}</Label>
+                    <div key={key} className="space-y-2">
+                      <Label htmlFor={`custom-${key}`} className="capitalize text-slate-700 font-semibold text-xs">{key.replace('_', ' ')}</Label>
                       <Input 
                         id={`custom-${key}`} 
-                        placeholder={`Value for ${key.replace('_', ' ')}`}
+                        placeholder={`e.g. ${key.includes('ram') ? '32GB' : 'Value'}`}
                         value={customFieldValues[key] || ''} 
                         onChange={(e) => handleCustomFieldChange(key, e.target.value)} 
+                        className="h-11 rounded-xl border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
                       />
                     </div>
                   ))}
@@ -208,51 +272,68 @@ export default function RegisterAssetPage() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="location">Initial Location</Label>
-                <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="condition">Check-in Condition</Label>
-                <Select onValueChange={(val) => setCondition(val || 'Excellent')} defaultValue="Excellent">
-                  <SelectTrigger id="condition">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Excellent">Excellent</SelectItem>
-                    <SelectItem value="Good">Good</SelectItem>
-                    <SelectItem value="Fair">Fair</SelectItem>
-                    <SelectItem value="Poor">Poor/Damaged</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Location & Condition Section */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono border-b pb-1.5 flex items-center gap-2">
+                <Building className="h-4 w-4" />
+                <span>Lifecycle Configuration</span>
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location" className="text-slate-700 font-semibold text-xs">Initial Location</Label>
+                  <Input 
+                    id="location" 
+                    value={location} 
+                    onChange={(e) => setLocation(e.target.value)} 
+                    className="h-11 rounded-xl border-slate-200 focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="condition" className="text-slate-700 font-semibold text-xs">Check-in Condition</Label>
+                  <Select onValueChange={(val) => setCondition(val || 'Excellent')} defaultValue="Excellent">
+                    <SelectTrigger id="condition" className="h-11 rounded-xl border-slate-200">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Excellent">Excellent</SelectItem>
+                      <SelectItem value="Good">Good</SelectItem>
+                      <SelectItem value="Fair">Fair</SelectItem>
+                      <SelectItem value="Poor">Poor/Damaged</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            {/* Bookable Flag */}
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 border rounded-lg">
+            {/* Bookable Flag Box */}
+            <div className="flex items-start space-x-3.5 p-4 bg-indigo-50/20 border border-indigo-100/50 rounded-2xl">
               <input 
                 id="isBookable" 
                 type="checkbox" 
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer mt-0.5"
                 checked={isBookable}
                 onChange={(e) => setIsBookable(e.target.checked)}
               />
-              <Label htmlFor="isBookable" className="font-semibold text-gray-900 cursor-pointer">
+              <Label htmlFor="isBookable" className="font-bold text-slate-800 cursor-pointer select-none">
                 Mark as Shared Bookable Resource
-                <span className="font-normal text-xs text-gray-500 block">Enables this resource to be scheduled by time slots on the Booking calendar.</span>
+                <span className="font-normal text-[11px] text-slate-500 block mt-0.5">
+                  Enables employees to reserve slots on the Booking calendar.
+                </span>
               </Label>
             </div>
           </CardContent>
           
-          <CardFooter className="flex justify-between border-t p-4 mt-6">
-            <Link href="/assets" className="inline-flex h-10 items-center justify-center rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50">
+          <CardFooter className="flex justify-between border-t border-slate-100 p-8 bg-slate-50/50">
+            <Link href="/assets" className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 shadow-xs hover:bg-slate-50 transition-all">
               Cancel
             </Link>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="h-11 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white shadow-lg shadow-indigo-600/10 hover:bg-indigo-500 glow-btn-primary">
               {loading ? 'Registering...' : 'Register Asset'}
             </Button>
           </CardFooter>
         </form>
       </Card>
     </div>
+  );
+}
