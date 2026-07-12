@@ -61,7 +61,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Bypassed admin access validation for prototype review
+  // Admin access validation
+  // Admin is allowed to access non-admin pages (like /dashboard, /reports) but non-admins cannot access /admin
+  if (role !== 'admin') {
+    if (url.pathname.startsWith('/admin')) {
+      url.pathname = '/dashboard';
+      return NextResponse.redirect(url);
+    }
+  }
 
   return supabaseResponse;
 }

@@ -73,7 +73,15 @@ export function Sidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">Menu Options</p>
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems
+          .filter((item) => {
+            // Organization Setup is admin-only
+            if (item.href === '/admin/org-setup' && role !== 'admin') {
+              return false;
+            }
+            return true;
+          })
+          .map(({ href, label, icon: Icon }) => {
             const active = pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
             return (
               <Link
