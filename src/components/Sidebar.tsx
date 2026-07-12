@@ -19,6 +19,7 @@ import {
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'asset_manager', 'department_head', 'employee'] },
@@ -38,6 +39,17 @@ export function Sidebar() {
   const router = useRouter();
   const supabase = createClient();
   const [role, setRole] = useState<string>('employee');
+  const [isMock, setIsMock] = useState(true);
+  const [dbUrl, setDbUrl] = useState('');
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const isMockMode = !url || url.includes('placeholder');
+    setIsMock(isMockMode);
+    if (url && !isMockMode) {
+      setDbUrl(url.replace('https://', '').split('.')[0]);
+    }
+  }, []);
 
   useEffect(() => {
     async function getProfile() {
@@ -67,6 +79,15 @@ export function Sidebar() {
         <div>
           <p className="text-sm font-bold text-gradient leading-none">AssetFlow</p>
           <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">Enterprise ERP</p>
+          <div className="mt-1.5 flex items-center gap-1">
+            <span className={cn(
+              "h-1.5 w-1.5 rounded-full animate-pulse",
+              isMock ? "bg-amber-500" : "bg-emerald-500"
+            )} />
+            <span className="text-[8px] text-muted-foreground font-semibold uppercase tracking-wider">
+              {isMock ? "Mock DB" : `Live: ${dbUrl}`}
+            </span>
+          </div>
         </div>
       </div>
 

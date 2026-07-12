@@ -110,10 +110,17 @@ export default function OrgSetupPage() {
       parent_dept_id: values.parent_dept_id || null,
       status: values.status,
     };
+    let resError;
     if (editingDept) {
-      await supabase.from('departments').update(payload).eq('id', editingDept.id);
+      const { error } = await supabase.from('departments').update(payload).eq('id', editingDept.id);
+      resError = error;
     } else {
-      await supabase.from('departments').insert([payload]);
+      const { error } = await supabase.from('departments').insert([payload]);
+      resError = error;
+    }
+    if (resError) {
+      alert('Database Error: ' + resError.message);
+      return;
     }
     setEditingDept(null);
     setIsDeptOpen(false);
@@ -135,10 +142,17 @@ export default function OrgSetupPage() {
       custom_fields: parsedFields,
       status: values.status,
     };
+    let resError;
     if (editingCat) {
-      await supabase.from('asset_categories').update(payload).eq('id', editingCat.id);
+      const { error } = await supabase.from('asset_categories').update(payload).eq('id', editingCat.id);
+      resError = error;
     } else {
-      await supabase.from('asset_categories').insert([payload]);
+      const { error } = await supabase.from('asset_categories').insert([payload]);
+      resError = error;
+    }
+    if (resError) {
+      alert('Database Error: ' + resError.message);
+      return;
     }
     setEditingCat(null);
     setIsCatOpen(false);
@@ -147,7 +161,11 @@ export default function OrgSetupPage() {
   };
 
   const promoteEmployee = async (id: string, role: 'department_head' | 'asset_manager' | 'employee') => {
-    await supabase.from('users').update({ role }).eq('id', id);
+    const { error } = await supabase.from('users').update({ role }).eq('id', id);
+    if (error) {
+      alert('Database Error: ' + error.message);
+      return;
+    }
     fetchData();
   };
 
